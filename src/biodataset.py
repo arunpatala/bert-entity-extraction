@@ -46,6 +46,19 @@ def get_texts_tags(data_path):
   enc.fit([t for tag in tags for t in tag])
   return texts, tags, [enc.transform(tag) for tag in tags], enc
 
+import os
+def get_all_texts_tags(data_path='../input/NERdata/', file_name='train_dev.tsv'):
+  all_texts = []
+  all_tags = []
+  for d in os.listdir(data_path):
+    dir_path = data_path + os.path.sep + d
+    file_path = dir_path + os.path.sep + file_name
+    texts, tags, tagids, enc = get_texts_tags(file_path)
+    all_texts.extend(texts)
+    all_tags.extend(tagids)
+  return all_texts, all_tags, enc
+
+
 class BioEntityDataset:
     def __init__(self, texts, tags):
         self.texts = texts

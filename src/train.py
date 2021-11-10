@@ -14,7 +14,7 @@ import config
 import dataset
 import engine
 from model import EntityModel
-from biodataset import BioEntityDataset, get_texts_tags
+from biodataset import BioEntityDataset, get_all_texts_tags
 
 def process_data(data_path):
     df = pd.read_csv(data_path, encoding="latin-1")
@@ -33,7 +33,7 @@ def process_data(data_path):
 
 
 if __name__ == "__main__":
-    train_sentences, _, train_tag, enc_tag = get_texts_tags(config.BIO_TRAINING_FILE)
+    train_sentences, train_tag, enc_tag = get_all_texts_tags(file_name=config.BIO_TRAINING_FILE)
     
     meta_data = {
         "enc_tag": enc_tag
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         train_dataset, batch_size=config.TRAIN_BATCH_SIZE, num_workers=4
     )
 
-    test_sentences, _, test_tag, enc_tag = get_texts_tags(config.BIO_TESTING_FILE)
+    test_sentences, test_tag, enc_tag = get_all_texts_tags(file_name=config.BIO_TESTING_FILE)
 
     valid_dataset = BioEntityDataset(
         texts=test_sentences, tags=test_tag
