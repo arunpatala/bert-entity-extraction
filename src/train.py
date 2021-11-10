@@ -14,7 +14,7 @@ import config
 import dataset
 import engine
 from model import EntityModel
-
+from biodataset import BioEntityDataset, get_texts_tags
 
 def process_data(data_path):
     df = pd.read_csv(data_path, encoding="latin-1")
@@ -33,37 +33,28 @@ def process_data(data_path):
 
 
 if __name__ == "__main__":
-    sentences, pos, tag, enc_pos, enc_tag = process_data(config.TRAINING_FILE)
+    train_sentences, _, train_tag, enc_tag = get_texts_tags(config.BIO_TRAINING_FILE)
     
     meta_data = {
-        "enc_pos": enc_pos,
         "enc_tag": enc_tag
     }
 
-    joblib.dump(meta_data, "meta.bin")
+    joblib.dump(meta_data, "biometa.bin")
 
-    num_pos = len(list(enc_pos.classes_))
     num_tag = len(list(enc_tag.classes_))
 
-    (
-        train_sentences,
-        test_sentences,
-        train_pos,
-        test_pos,
-        train_tag,
-        test_tag
-    ) = model_selection.train_test_split(sentences, pos, tag, random_state=42, test_size=0.1)
-
-    train_dataset = dataset.EntityDataset(
-        texts=train_sentences, pos=train_pos, tags=train_tag
+    train_dataset = BioEntityDataset(
+        texts=train_sentences, tags=train_tag
     )
 
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=config.TRAIN_BATCH_SIZE, num_workers=4
     )
 
-    valid_dataset = dataset.EntityDataset(
-        texts=test_sentences, pos=test_pos, tags=test_tag
+    test_sentences, _, test_tag, enc_tag = get_texts_tags(config.BIO_TESTING_FILE)
+
+    valid_dataset = BioEntityDataset(
+        texts=test_sentences, tags=test_tag
     )
 
     valid_data_loader = torch.utils.data.DataLoader(
@@ -71,7 +62,7 @@ if __name__ == "__main__":
     )
 
     device = torch.device("cuda")
-    model = EntityModel(num_tag=num_tag, num_pos=num_pos)
+    model = EntityModel(num_tag=num_tag)
     model.to(device)
 
     param_optimizer = list(model.named_parameters())

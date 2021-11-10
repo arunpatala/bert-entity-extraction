@@ -12,7 +12,7 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         for k, v in data.items():
             data[k] = v.to(device)
         optimizer.zero_grad()
-        tag, pos, loss = model(**data)
+        tag, loss = model(**data)
         loss.backward()
         optimizer.step()
         scheduler.step()
@@ -35,7 +35,7 @@ def eval_fn(data_loader, model, device):
     for data in pbar:
         for k, v in data.items():
             data[k] = v.to(device)
-        tag, pos, loss = model(**data)
+        tag, loss = model(**data)
         final_loss += loss.item()
         correct_cnt += ((tag.argmax(2)==data["target_tag"])*data["mask"]).sum().item()
         cnt += data["mask"].sum().item()
